@@ -1,0 +1,107 @@
+# Spark Operator Configuration for Bifrost Core
+
+spark-operator:
+  # Spark Operator image (upstream chart config)
+  # Leave tag empty to use chart's appVersion
+  image:
+    registry: ghcr.io
+    repository: kubeflow/spark-operator/controller
+    tag: ""  # Uses chart appVersion (2.3.0)
+    pullPolicy: IfNotPresent
+
+  # Number of operator replicas
+  replicaCount: 1
+
+  # ServiceAccounts
+  serviceAccounts:
+    spark:
+      create: true
+      name: spark
+    sparkoperator:
+      create: true
+      name: spark-operator
+
+  # Namespace to watch for SparkApplications
+  sparkJobNamespace: "bifrost-core"
+
+  # Webhook for SparkApplication validation/mutation
+  webhook:
+    enable: true
+    port: 9443  # Default port to avoid conflict with metrics
+
+  # Resource limits
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Leader election for HA
+  leaderElection:
+    lockName: spark-operator-lock
+    lockNamespace: bifrost-core
+
+  # Metrics endpoint for Prometheus
+  metrics:
+    enable: true
+    port: 10254
+    endpoint: /metrics
+
+  # Log verbosity (0=panic, 1=error, 2=warn, 3=info, 4=debug)
+  logLevel: 2
+
+# Bifrost-specific Spark configuration
+bifrost:
+  # Default Spark image with lakehouse format support
+  sparkImage:
+    repository: docker.io/library/spark
+    tag: "4.0.0"
+    pullPolicy: IfNotPresent
+
+  # Default Spark version
+  sparkVersion: "4.0.0"
+
+  # Default resource configuration for Spark jobs
+  defaults:
+    driver:
+      cores: 1
+      memory: "1g"
+      serviceAccount: spark
+    executor:
+      cores: 1
+      instances: 2
+      memory: "1g"
+
+  # Object storage configuration
+  objectStorage:
+    type: s3  # s3, minio, azure, gcs
+    endpoint: ""
+    bucket: ""
+    # Credentials should be provided via secrets
+    # See manifests/spark/secrets/ for examples
+
+  # Hive Metastore configuration
+  metastore:
+    enabled: true
+    uri: "thrift://hive-metastore:9083"
+
+  # Lakehouse format support
+  formats:
+    delta:
+      enabled: true
+      version: "3.0.0"
+    iceberg:
+      enabled: true
+      version: "1.4.3"
+    hudi:
+      enabled: true
+      version: "0.14.1"
+
+  # Monitoring configuration
+  monitoring:
+    enabled: true
+    prometheus:
+      enabled: true
+      port: 8090

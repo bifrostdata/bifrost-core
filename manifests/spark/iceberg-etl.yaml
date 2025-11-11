@@ -1,0 +1,65 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: iceberg-etl
+  # namespace: <your-namespace>  # Set to your environment namespace when deploying
+spec:
+  type: Python
+  pythonVersion: "3"
+  mode: cluster
+  image: "docker.io/library/spark:4.0.0"
+  imagePullPolicy: IfNotPresent
+  mainApplicationFile: "local:///opt/spark/work-dir/app.py"
+  sparkVersion: "4.0.0"
+
+  restartPolicy:
+    type: Never
+
+  sparkConf:
+    "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtension"
+    "spark.sql.catalog.iceberg": "org.apache.iceberg.spark.SparkCatalog"
+    "spark.sql.catalog.iceberg.type": "hive"
+    "spark.sql.catalog.iceberg.uri": "thrift://hive-metastore:9083"
+    "spark.sql.catalog.iceberg.warehouse": "s3a://bifrost-data/warehouse"
+    "spark.hadoop.fs.s3a.endpoint": "http://minio.bifrost-core.svc:9000"
+    "spark.hadoop.fs.s3a.path.style.access": "true"
+    "spark.hadoop.hive.metastore.uris": "thrift://hive-metastore:9083"
+
+  driver:
+    cores: 1
+    coreLimit: "1200m"
+    memory: "1g"
+    labels:
+      version: "4.0.0"
+      app: "iceberg-etl"
+    serviceAccount: spark
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: s3-credentials
+            key: access-key
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: s3-credentials
+            key: secret-key
+
+  executor:
+    cores: 2
+    instances: 3
+    memory: "2g"
+    labels:
+      version: "4.0.0"
+      app: "iceberg-etl"
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: s3-credentials
+            key: access-key
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: s3-credentials
+            key: secret-key

@@ -1,0 +1,25 @@
+apiVersion: v2
+name: spark-operator
+description: Kubernetes operator for Apache Spark
+type: application
+version: 1.0.0
+appVersion: "v1beta2-1.4.3-3.5.0"
+
+keywords:
+  - spark
+  - operator
+  - big-data
+  - lakehouse
+
+home: https://github.com/bifrostdata/bifrost-core
+sources:
+  - https://github.com/kubeflow/spark-operator
+
+maintainers:
+  - name: Bifrost Team
+    email: team@bifrost.dev
+
+dependencies:
+  - name: spark-operator
+    version: "2.x.x"
+    repository: https://kubeflow.github.io/spark-operator

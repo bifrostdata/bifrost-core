@@ -1,0 +1,66 @@
+# Helm
+*.lock
+Chart.lock
+requirements.lock
+
+# Helm dependencies
+charts/*/charts/
+!charts/*/.gitkeep
+
+# Packaged charts
+*.tgz
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+*.code-workspace
+
+# Secrets and sensitive data
+secrets.yaml
+*.secret
+*.key
+*.pem
+*.crt
+*-secret.yaml
+*-secrets.yaml
+
+# Test and build artifacts
+test-results/
+coverage/
+*.log
+
+# Kubernetes manifests that are generated
+rendered/
+output/
+generated/
+
+# Helm unit test snapshots
+__snapshot__/
+
+# Values files with sensitive data (keep templates)
+**/values-local.yaml
+**/values-dev-*.yaml
+**/values-prod-*.yaml
+!**/values.yaml
+!**/values-*.yaml.example

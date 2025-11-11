@@ -1,0 +1,95 @@
+# Hive Metastore Configuration for Bifrost Core
+
+# PostgreSQL configuration (dependency)
+postgresql:
+  enabled: true
+  auth:
+    username: hive
+    password: hive
+    database: metastore
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+
+# Hive Metastore configuration
+hive:
+  image:
+    repository: apache/hive
+    tag: "3.1.3"
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+
+  service:
+    type: ClusterIP
+    port: 9083
+    name: hive-metastore
+
+  # Resource limits
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  # Metastore configuration
+  config:
+    # PostgreSQL connection
+    database:
+      type: postgres
+      host: "{{ .Release.Name }}-postgresql"
+      port: 5432
+      name: metastore
+      user: hive
+      # Password from secret
+
+    # Warehouse directory in object storage
+    warehouse:
+      dir: "s3a://bifrost-data/warehouse"
+
+    # Schema initialization
+    schema:
+      verification: false
+      auto: true
+
+  # Environment variables
+  env:
+    - name: SERVICE_NAME
+      value: "metastore"
+    - name: DB_DRIVER
+      value: "postgres"
+    - name: SERVICE_OPTS
+      value: "-Djavax.jdo.option.ConnectionDriverName=org.postgresql.Driver"
+
+# Bifrost-specific configuration
+bifrost:
+  # Object storage configuration
+  objectStorage:
+    type: s3  # s3, minio, azure, gcs
+    endpoint: ""
+    bucket: ""
+    warehouse: "/warehouse"
+    # Credentials via secrets
+
+  # Initialization
+  init:
+    enabled: true
+    createDatabase: true
+    runSchematool: true
+
+  # Monitoring
+  monitoring:
+    enabled: true
+    prometheus:
+      enabled: true
+      port: 9404

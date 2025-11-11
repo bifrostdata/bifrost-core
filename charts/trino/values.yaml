@@ -1,0 +1,121 @@
+# Trino Configuration for Bifrost Core
+
+trino:
+  image:
+    repository: trinodb/trino
+    tag: "431"
+    pullPolicy: IfNotPresent
+
+  server:
+    workers: 2
+
+    # Coordinator configuration
+    coordinator:
+      jvm:
+        maxHeapSize: "8G"
+        gcMethod:
+          type: "UseG1GC"
+          g1:
+            heapRegionSize: "32M"
+      config:
+        memory:
+          heapHeadroomPerNode: "1GB"
+        query:
+          maxMemory: "4GB"
+          maxMemoryPerNode: "1GB"
+
+    # Worker configuration
+    worker:
+      jvm:
+        maxHeapSize: "8G"
+        gcMethod:
+          type: "UseG1GC"
+          g1:
+            heapRegionSize: "32M"
+      config:
+        memory:
+          heapHeadroomPerNode: "1GB"
+        query:
+          maxMemoryPerNode: "1GB"
+
+  # Resource limits
+  coordinator:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+
+  worker:
+    resources:
+      requests:
+        memory: "4Gi"
+        cpu: "2"
+      limits:
+        memory: "8Gi"
+        cpu: "4"
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8080
+
+  # Additional catalogs
+  additionalCatalogs:
+    # Iceberg catalog
+    iceberg: |
+      connector.name=iceberg
+      iceberg.catalog.type=hive_metastore
+      hive.metastore.uri=thrift://hive-metastore:9083
+      iceberg.file-format=PARQUET
+      iceberg.compression-codec=SNAPPY
+      hive.s3.endpoint=http://minio.bifrost-core.svc:9000
+      hive.s3.path-style-access=true
+      hive.s3.ssl.enabled=false
+
+    # Delta Lake catalog
+    delta: |
+      connector.name=delta_lake
+      hive.metastore.uri=thrift://hive-metastore:9083
+      delta.enable-non-concurrent-writes=true
+      hive.s3.endpoint=http://minio.bifrost-core.svc:9000
+      hive.s3.path-style-access=true
+      hive.s3.ssl.enabled=false
+
+    # Hudi catalog
+    hudi: |
+      connector.name=hudi
+      hive.metastore.uri=thrift://hive-metastore:9083
+      hive.s3.endpoint=http://minio.bifrost-core.svc:9000
+      hive.s3.path-style-access=true
+      hive.s3.ssl.enabled=false
+
+# Bifrost-specific configuration
+bifrost:
+  # Object storage configuration
+  objectStorage:
+    type: s3  # s3, minio, azure, gcs
+    endpoint: ""
+    bucket: ""
+    # Credentials via secrets
+
+  # Metastore configuration
+  metastore:
+    uri: "thrift://hive-metastore:9083"
+
+  # Security
+  security:
+    tls:
+      enabled: false
+    authentication:
+      enabled: false
+      type: password  # password, ldap, oauth2
+
+  # Monitoring
+  monitoring:
+    enabled: true
+    jmxExporter:
+      enabled: true
+      port: 9090

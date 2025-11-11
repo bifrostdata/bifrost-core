@@ -1,0 +1,55 @@
+apiVersion: v2
+name: bifrost-core
+description: Data plane for Bifrost platform - Apache Spark, Trino, and Lakehouse components
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - bifrost
+  - lakehouse
+  - spark
+  - trino
+  - delta-lake
+  - iceberg
+  - hudi
+  - data-platform
+
+home: https://github.com/bifrostdata/bifrost-core
+sources:
+  - https://github.com/bifrostdata/bifrost-core
+
+maintainers:
+  - name: Bifrost Team
+    email: team@bifrost.dev
+
+# Subchart dependencies
+dependencies:
+  # Hive Metastore (must be installed first)
+  - name: metastore
+    version: "1.0.0"
+    repository: "file://./charts/metastore"
+    condition: metastore.enabled
+    tags:
+      - metadata
+
+  # Spark Operator for data processing
+  - name: spark-operator
+    version: "1.0.0"
+    repository: "file://./charts/spark-operator"
+    condition: spark-operator.enabled
+    tags:
+      - compute
+
+  # Trino for SQL queries
+  - name: trino
+    version: "1.0.0"
+    repository: "file://./charts/trino"
+    condition: trino.enabled
+    tags:
+      - query-engine
+
+# Annotations for Artifact Hub
+annotations:
+  category: Database
+  licenses: Apache-2.0
